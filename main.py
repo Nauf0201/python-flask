@@ -1,42 +1,71 @@
-import random
-from flask import Flask
+# Impor
+from flask import Flask, render_template, request
+
 
 app = Flask(__name__)
 
-@app.route("/")
-def hello_world():
-    home_teks = '''
-    <a href="/random_fact">View a random fact!</a>
-    <br>
-    <a href="/emot">View a random emot!</a>
-    <br>
-    <a href="/coin_hoki">Gambar coin atau angka coin? (klik di sini untuk menguji benarnya)</a>'''
-    return home_teks
+def result_calculate(size, lights, device):
+    # Variabel yang memungkinkan penghitungan konsumsi energi peralatan
+    home_coef = 100
+    light_coef = 0.04
+    devices_coef = 5   
+    return size * home_coef + lights * light_coef + device * devices_coef 
 
-@app.route("/random_fact")
-
+# Halaman pertama
+@app.route('/')
 def index():
+    return render_template('index.html')
+# Halaman kedua
+@app.route('/<size>')
+def lights(size):
+    return render_template(
+                            'lights.html', 
+                            size=size
+                           )
 
-    a = ["Kebanyakan orang yang menderita kecanduan teknologi mengalami stres yang kuat ketika mereka berada di luar area jangkauan jaringan atau tidak dapat menggunakan perangkat mereka", "Menurut sebuah studi yang dilakukan pada tahun 2018, lebih dari 50 orang berusia 18 hingga 34 tahun menganggap diri mereka bergantung pada ponsel pintar mereka.", "Studi tentang ketergantungan teknologi adalah salah satu bidang penelitian ilmiah modern yang paling relevan", "Menurut sebuah studi tahun 2019, lebih dari 60 orang merespons pesan pekerjaan di ponsel mereka dalam waktu 15 menit setelah pulang kerja",
-         "Salah satu cara untuk memerangi ketergantungan teknologi adalah dengan mencari kegiatan yang membawa kesenangan dan meningkatkan suasana hati", "Elon Musk mengklaim bahwa jejaring sosial dirancang untuk membuat kita tetap berada di dalam platform, sehingga kita menghabiskan waktu sebanyak mungkin untuk melihat konten", 
-         "Elon Musk juga menganjurkan regulasi jejaring sosial dan perlindungan data pribadi pengguna. Dia mengklaim bahwa jejaring sosial mengumpulkan sejumlah besar informasi tentang kita, yang kemudian dapat digunakan untuk memanipulasi pikiran dan perilaku kita", "Jejaring sosial memiliki sisi positif dan negatif, dan kita harus menyadari keduanya saat menggunakan platform ini"]
-    return f'<p>{random.choice(a)}</p>'
-    
+# Halaman ketiga
+@app.route('/<size>/<lights>')
+def electronics(size, lights):
+    return render_template(
+                            'electronics.html',                           
+                            size = size, 
+                            lights = lights                           
+                           )
 
-@app.route("/emot")
+# Perhitungan
+@app.route('/<size>/<lights>/<device>')
+def end(size, lights, device):
+    return render_template('end.html', 
+                            result=result_calculate(int(size),
+                                                    int(lights), 
+                                                    int(device)
+                                                    )
+                        )
+# Formulir
+@app.route('/form')
+def form():
+    return render_template('form.html')
 
-def imeg():
-    emoot = ['😁', '😂', '😎', '😥', '😫', '😴', '😛', '😡']
-    emooot = random.choice(emoot)
-    return emooot
-
-@app.route("/coin_hoki")
-
-def lempar():
-    coinnya = ['gambar', 'angka', 'coinnya ke buang hahahahaha']
-    coin_random = random.choice(coinnya)
-    return coin_random
-
-
+#Hasil formulir
+@app.route('/submit', methods=['POST'])
+def submit_form():
+    # Mendeklarasikan variabel untuk pengumpulan data
+    name = request.form['name']
+    email = request.form['email']
+    address = request.form['address']
+    date = request.form['date']
+    with open('form.txt', 'a',) as f:
+        f.write(name + '\n')
+        f.write(email + '\n')
+        f.write(date + '\n')
+        f.write(address + '\n')
+    # Anda dapat menyimpan data Anda atau mengirimkannya melalui email
+    return render_template('form_result.html', 
+                           # Tempatkan variabel di sini
+                           name=name,
+                           email=email,
+                           address=address,
+                           date=date
+                           )
 
 app.run(debug=True)
